@@ -9,6 +9,8 @@ const isFunction = (fn): boolean => typeof fn === 'function'
 
 const hasChange = (oldVal, newVal): boolean => oldVal !== newVal
 
+// test commit
+
 export {
   isObject,
   hasOwn,
