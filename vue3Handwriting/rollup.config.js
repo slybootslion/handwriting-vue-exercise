@@ -9,7 +9,7 @@ export default {
     format: 'umd',
     file: path.resolve(__dirname, 'dist/bundle.js'),
     sourcemap: true,
-    name: 'VueReactivity'
+    name: 'Vue'
   },
   plugins: [
     nodeResolve({
