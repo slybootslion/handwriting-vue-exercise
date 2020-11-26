@@ -1,0 +1,19 @@
+{
+  "name": "vue3-handwriting",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "rollup -c -w"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@rollup/plugin-node-resolve": "^10.0.0",
+    "rollup": "^2.33.3",
+    "rollup-plugin-serve": "^1.1.0",
+    "rollup-plugin-typescript2": "^0.29.0",
+    "typescript": "^4.0.5"
+  }
+}

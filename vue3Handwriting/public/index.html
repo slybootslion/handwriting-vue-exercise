@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue3响应式原理实现</title>
+</head>
+
+<body>
+  <div id="app"></div>
+
+  <script src="/dist/bundle.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    let { reactive, effect, computed, ref, toRefs } = VueReactivity
+    const obj = {
+      name: 'gg',
+      age: 11,
+      address: { tel: 1, exp: 'abc' },
+      arr: [1, 3, 5]
+    }
+    const status = ref(false)
+    const state = reactive(obj)
+    const state2 = reactive({ a: 1 })
+    const { a } = toRefs(state2)
+    const myAge = computed(() => state.age + 10)
+    // effect 副作用，默认一加载就执行
+    effect(() => {
+      // app.innerHTML = `${state.name}今年${state.age}岁`
+      // app.innerHTML = state.arr
+      app.innerHTML = `
+        ${state.name}今年${state.age}岁，年龄是${myAge.value}岁 <br>
+        状态：${status.value}<br>
+        a: ${a.value}`
+    })
+    setTimeout(() => {
+      a.value++
+      state.age++
+      status.value = true
+    }, 2000)
+  </script>
+</body>
+
+</html>

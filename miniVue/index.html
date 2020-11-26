@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>手写Vue</title>
+</head>
+<body>
+<div id="app">
+  <h1>插值表达式</h1>
+  <h3>{{msg}}</h3>
+  <h3>{{count}}</h3>
+  <p>-------------</p>
+  <h1>v-text</h1>
+  <div v-text="msg"></div>
+  <p>-------------</p>
+  <h1>v-model</h1>
+  <input type="text" v-model="msg">
+  <input type="text" v-model="count">
+</div>
+</body>
+<script src="./js/Dep.js" charset="utf-8"></script>
+<script src="./js/Watcher.js" charset="utf-8"></script>
+<script src="./js/Compiler.js" charset="utf-8"></script>
+<script src="./js/Observer.js" charset="utf-8"></script>
+<script src="./js/Vue.js" charset="utf-8"></script>
+<script type="text/javascript" charset="utf-8">
+  const vm = new Vue({
+    el: '#app',
+    data: {
+      msg: 'hello world',
+      count: 10,
+      person: {name: 'zs'}
+    }
+  })
+</script>
+</html>

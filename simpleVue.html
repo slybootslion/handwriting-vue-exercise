@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>简易版</title>
+</head>
+<body>
+<div id="app"></div>
+<input type="text" id="input">
+</body>
+<script type="text/javascript" charset="utf-8">
+  const app = document.getElementById('app')
+  const input = document.getElementById('input')
+  const state = {count: 0}
+  let active = null
+
+  // 数据响应式
+  function defineReactive(obj) {
+    Object.keys(obj).forEach(key => {
+      let val = obj[key]
+      let dep = []
+      Object.defineProperty(obj, key, {
+        get() {
+          // 收集依赖
+          if (active) dep.push(active)
+          return val
+        },
+        set(newValue) {
+          val = newValue
+          // 通知更新视图
+          dep.forEach(watcher => watcher())
+        }
+      })
+    })
+  }
+  defineReactive(state)
+
+  // 发布订阅
+  function watcher(cb) {
+    active = cb
+    cb()
+    active = null
+  }
+
+  watcher(() => {
+    app.innerHTML = state.count
+    input.value = state.count
+  })
+  watcher(() => {
+    console.log(state.count)
+  })
+
+  input.addEventListener('input', (e) => {
+    state.count = e.target.value
+  })
+
+</script>
+</html>

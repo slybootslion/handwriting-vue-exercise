@@ -1,0 +1,21 @@
+{
+  "name": "vueHeadwriting",
+  "version": "1.0.0",
+  "description": "",
+  "main": "rollup.config.js",
+  "scripts": {
+    "build:dev": "rollup -c",
+    "test": "cross-env ENV=development rollup -c -w"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-babel": "^5.2.1",
+    "@babel/core": "^7.11.6",
+    "@babel/preset-env": "^7.11.5",
+    "cross-env": "^7.0.2",
+    "rollup": "^2.28.2",
+    "rollup-plugin-serve": "^1.0.4"
+  }
+}

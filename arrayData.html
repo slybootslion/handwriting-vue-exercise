@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>数组的响应式</title>
+</head>
+
+<body>
+  <div id="app"></div>
+
+</body>
+<script type="text/javascript" charset="utf-8">
+  const app = document.getElementById('app')
+  const state = [1, 2, 3, 4, 5]
+
+  const originalArray = Array.prototype
+  const arrayMethods = Object.create(originalArray)
+
+  function defineReactive(obj) {
+    //  函数劫持
+    arrayMethods.push = function (...args) {
+      originalArray.push.call(this, ...args)
+      render() // 调用push就重新渲染
+    }
+
+    obj.__proto__ = arrayMethods
+  }
+
+  defineReactive(state)
+
+  function render() {
+    app.innerText = state
+  }
+  render()
+
+  setTimeout(() => {
+    state.push(6)
+  }, 2000)
+</script>
+
+</html>

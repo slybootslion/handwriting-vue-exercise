@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue手写</title>
+</head>
+
+
+<div id="app">
+  <p>{{age}}</p>
+  <p style="color: red; background: yellow;">{{name}}</p>
+  <span>{{phone}}</span>
+  <p>
+    <span>{{email}}</span>
+    <span>--- ---</span>
+    <span>{{card}}</span>
+  </p>
+  <p>{{address.city}}</p>
+  <p>{{address}}</p>
+  <p>{{friends}}</p>
+</div>
+
+<body>
+  <script src="/dist/umd/vue.js"></script>
+  <script>
+    Vue.component('my-component', {
+      template: '<div>my global component</div>'
+    })
+    let vm = new Vue({
+      el: '#app',
+      data() {
+        return {
+          name: 'Theresa W Chavez',
+          age: '38',
+          sex: 'female',
+          address: {
+            street: '4961 Woodbridge Lane',
+            city: 'Southfield',
+            state: 'Michigan',
+            postcode: 48235
+          },
+          phone: '313-544-6952',
+          card: '5139116296680983',
+          email: '1u4dgemhhyc@google.net',
+          friends: [{ id: 1, name: 'Constance J Brody' }, { id: 2, name: 'Warren B Heine' }, [['儀 築地']]],
+        }
+      },
+      computed() {
+      },
+      watch() {
+      },
+      beforeCreate() {
+        // console.log('user')
+      },
+      components: {
+        'self-component': {
+          template: '<div>self component <p><child-template></child-template></p> </div>',
+          components: {
+            'child-template': {
+              template: '<span>child template</span>'
+
+            }
+          }
+        }
+      }
+    })
+    // vm._data.friends.push({id: 3, name: 'zf'})
+    // console.log(vm._data)
+    // console.log(vm.card)
+
+    setTimeout(() => {
+      vm.age = 39
+      // vm.friends[2][0].push('不认识')
+      // vm.$nextTick(() => console.log(vm.$el.innerHTML))
+      // vm._update(vm._render())
+    }, 1000)
+  </script>
+</body>
+
+</html>

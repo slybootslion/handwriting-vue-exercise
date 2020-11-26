@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vue实现</title>
+</head>
+<body>
+<div id="app" a="1" b="2">
+  <div style="color: red;width: 110px;">
+    <p>{{arr}}</p>
+    <span style="background: yellow">{{name}} 文本 {{age}} hahaha</span>
+  </div>
+  <my-button></my-button>
+  <my-button1></my-button1>
+</div>
+<script src="/dist/vue.js" charset="utf-8"></script>
+<script type="text/javascript" charset="utf-8">
+Vue.mixin({
+  a: 1,
+  created () {
+    // console.log('mixin created1')
+  }
+})
+Vue.mixin({
+  a: 2,
+  created () {
+    // console.log('mixin created2')
+  }
+})
+Vue.component('my-button', {
+  template: '<button>按钮</button>'
+})
+const vm = new Vue({
+  el: '#app',
+  data () {
+    return {
+      name: 'bd',
+      age: 10,
+      obj: {
+        n: 1,
+        a: 2
+      },
+      arr: [[1], 2, 3, { a: 1 }]
+    }
+  },
+  beforeCreate () {
+    // console.log('beforeCreated')
+  },
+  created () {
+    // console.log('created')
+  },
+  components: {
+    'my-button1': {
+      template: '<button>内部按钮</button>'
+    }
+  }
+
+})
+// vm.obj = { n: 2, a: 1 }
+// vm.arr.push({ b: 1 })
+// vm.name = 'gg'
+// vm.$nextTick(() => console.log(vm.$options.$el.innerHTML))
+// setTimeout(() => {
+//   vm.arr[0].push(56)
+// }, 1000)
+// console.log(vm)
+setTimeout(() => vm.name = 'gg', 1500)
+</script>
+</body>
+</html>
