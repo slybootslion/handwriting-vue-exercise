@@ -4,11 +4,14 @@
   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.Vue = {}));
 }(this, (function (exports) { 'use strict';
 
-  var isObject = function (obj) { return typeof obj === 'object' && obj != null; };
+  var isObject = function (obj) {
+      return typeof obj === 'object' && obj != null;
+  };
   var hasOwnProperty = Object.prototype.hasOwnProperty;
   var hasOwn = function (target, key) { return hasOwnProperty.call(target, key); };
   var isArray = function (obj) { return Array.isArray(obj); };
   var isFunction = function (fn) { return typeof fn === 'function'; };
+  var isString = function (val) { return typeof val === 'string'; };
   var hasChange = function (oldVal, newVal) { return oldVal !== newVal; };
 
   // 依赖收集
@@ -271,18 +274,51 @@
       return __assign.apply(this, arguments);
   };
 
-  function createAppApi() {
+  function createVNode(type, props, children) {
+      if (props === void 0) { props = {}; }
+      if (children === void 0) { children = null; }
+      // 判断type是元素还是组件
+      var shapeFlag = isString(type)
+          ? 1 /* ELEMENT */
+          : isObject(type)
+              ? 4 /* STATEFUL_COMPONENT */
+              : 0;
+      var vnode = {
+          type: type,
+          props: props,
+          children: children,
+          component: null,
+          el: null,
+          key: props.key,
+          shapeFlag: shapeFlag,
+      };
+      if (isArray(children)) {
+          vnode.shapeFlag |= 16 /* ARRAY_CHILDREN */;
+      }
+      else {
+          vnode.shapeFlag |= 8 /* TEXT_CHILDREN */;
+      }
+      return vnode;
+  }
+
+  function createAppApi(render) {
       return function (component) {
           var app = {
-              mount: function (container) { }
+              mount: function (container) {
+                  var vNode = createVNode(component);
+                  render(vNode, container);
+              },
           };
           return app;
       };
   }
 
   function createRenderer(options) {
+      var render = function (vNode, container) {
+          console.log(vNode, container);
+      };
       return {
-          createApp: createAppApi()
+          createApp: createAppApi(render),
       };
   }
 
