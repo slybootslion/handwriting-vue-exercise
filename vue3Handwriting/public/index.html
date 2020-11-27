@@ -8,37 +8,24 @@
 </head>
 
 <body>
-  <div id="app"></div>
+<div id="app"></div>
 
-  <script src="/dist/bundle.js"></script>
-  <script type="text/javascript" charset="utf-8">
-    let { reactive, effect, computed, ref, toRefs } = Vue
-    const obj = {
-      name: 'gg',
-      age: 11,
-      address: { tel: 1, exp: 'abc' },
-      arr: [1, 3, 5]
-    }
-    const status = ref(false)
-    const state = reactive(obj)
-    const state2 = reactive({ a: 1 })
-    const { a } = toRefs(state2)
-    const myAge = computed(() => state.age + 10)
-    // effect 副作用，默认一加载就执行
-    effect(() => {
-      // app.innerHTML = `${state.name}今年${state.age}岁`
-      // app.innerHTML = state.arr
-      app.innerHTML = `
-        ${state.name}今年${state.age}岁，年龄是${myAge.value}岁 <br>
-        状态：${status.value}<br>
-        a: ${a.value}`
-    })
+<script src="/dist/bundle.js"></script>
+<script type="text/javascript" charset="utf-8">
+const { createApp, h, reactive } = Vue
+const App = {
+  setup () {
+    const state = reactive({ name: 'gg', age: 11 })
     setTimeout(() => {
-      a.value++
-      state.age++
-      status.value = true
+      state.name = 'google'
     }, 2000)
-  </script>
+    return () => {
+      return h('div', { style: { color: 'blue' } }, state.name)
+    }
+  }
+}
+createApp(App).mount('#app')
+</script>
 </body>
 
 </html>

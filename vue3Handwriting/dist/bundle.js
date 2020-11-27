@@ -245,7 +245,128 @@
       return result;
   }
 
+  /*! *****************************************************************************
+  Copyright (c) Microsoft Corporation.
+
+  Permission to use, copy, modify, and/or distribute this software for any
+  purpose with or without fee is hereby granted.
+
+  THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+  REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+  AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+  INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+  LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+  PERFORMANCE OF THIS SOFTWARE.
+  ***************************************************************************** */
+
+  var __assign = function() {
+      __assign = Object.assign || function __assign(t) {
+          for (var s, i = 1, n = arguments.length; i < n; i++) {
+              s = arguments[i];
+              for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+          }
+          return t;
+      };
+      return __assign.apply(this, arguments);
+  };
+
+  function createAppApi() {
+      return function (component) {
+          var app = {
+              mount: function (container) { }
+          };
+          return app;
+      };
+  }
+
+  function createRenderer(options) {
+      return {
+          createApp: createAppApi()
+      };
+  }
+
+  var nodeOpts = {
+      createElement: function (type) {
+          return document.createElement(type);
+      },
+      inset: function (child, parent, anchor) {
+          if (anchor === void 0) { anchor = null; }
+          parent.insertBefore(child, anchor);
+      },
+      remove: function (child) {
+          var parent = child.parentNode;
+          if (parent)
+              parent.removeChild(child);
+      },
+      setElementText: function (el, content) {
+          el.textContent = content;
+      },
+      createTextNode: function (content) {
+          return document.createTextNode(content);
+      },
+  };
+
+  function patchStyle(el, prev, next) {
+      var style = el.style;
+      if (!next) {
+          el.removeAttribute("style");
+      }
+      else {
+          for (var key in next) {
+              style[key] = next[key];
+          }
+          if (prev) {
+              for (var key in prev) {
+                  if (!next[key]) {
+                      style[key] = "";
+                  }
+              }
+          }
+      }
+  }
+  function patchClass(el, next) {
+      if (!next)
+          next = "";
+      el.className = next;
+  }
+  function pathAttr(el, key, next) {
+      if (!next) {
+          el.removeAttribute(key);
+      }
+      else {
+          el.setAttribute(key, next);
+      }
+  }
+  function patchProps(el, key, prevVal, nextVal) {
+      switch (key) {
+          case "style":
+              patchStyle(el, prevVal, nextVal);
+              break;
+          case "className":
+              patchClass(el, nextVal);
+          default:
+              pathAttr(el, key, nextVal);
+      }
+  }
+
+  function ensureRenderer() {
+      return createRenderer(__assign(__assign({}, nodeOpts), { patchProps: patchProps }));
+  }
+  function createApp(rootComponent) {
+      var app = ensureRenderer().createApp(rootComponent);
+      var mount = app.mount;
+      app.mount = function (container) {
+          container = document.querySelector(container);
+          container.innerHTML = "";
+          mount(container);
+      };
+      return app;
+  }
+
   exports.computed = computed;
+  exports.createApp = createApp;
+  exports.createRenderer = createRenderer;
   exports.effect = effect;
   exports.reactive = reactive;
   exports.ref = ref;
