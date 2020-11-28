@@ -15,12 +15,14 @@
 const { createApp, h, reactive } = Vue
 const App = {
   setup () {
-    const state = reactive({ name: 'gg', age: 11 })
+    const state = reactive({ flag: false })
     setTimeout(() => {
-      state.name = 'google'
+      state.flag = !state.flag
     }, 2000)
     return () => {
-      return h('div', { style: { color: 'blue' } }, state.name)
+      return state.flag ?
+        h('div', { style: { color: 'red' } }, 'google') :
+        h('div', { style: { color: 'blue' } }, 'baidu')
     }
   }
 }

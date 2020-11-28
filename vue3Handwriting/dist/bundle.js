@@ -313,13 +313,139 @@
       };
   }
 
+  function createComponentInstance(vNode) {
+      var instance = {
+          type: vNode.type,
+          props: {},
+          vNode: vNode,
+          render: null,
+          setupState: null,
+          isMounted: false,
+          subtree: null,
+      };
+      return instance;
+  }
+  function finishComponentSetup(instance) {
+      var Component = instance.type;
+      // 如果有render函数，以render函数中的内容为准
+      if (Component.render && !instance.render) {
+          instance.render = Component.render;
+      }
+      else if (!instance.render) ;
+  }
+  function handleSetupResult(instance, result) {
+      if (isFunction(result)) {
+          instance.render = result;
+      }
+      else {
+          instance.setupState = result;
+      }
+      // 兼容vue2处理方法
+      finishComponentSetup(instance);
+  }
+  function setupStatefulComponent(instance) {
+      var Component = instance.type;
+      var setup = Component.setup;
+      if (setup) {
+          var setupResult = setup(instance.props);
+          // setup返回状态，或者render函数
+          handleSetupResult(instance, setupResult);
+      }
+  }
+  function setupComponent(instance) {
+      // 属性处理
+      setupStatefulComponent(instance);
+  }
+
   function createRenderer(options) {
+      var hostCreateElement = options.createElement, hostInset = options.inset, hostRemove = options.remove, hostSetElementText = options.setElementText, hostCreateTextNode = options.createTextNode, hostPatchProps = options.patchProps;
+      var patch = function (prevNode, vNode, container) {
+          var shapeFlag = vNode.shapeFlag;
+          var mountElement = function (vNode, container) {
+              var shapeFlag = vNode.shapeFlag, props = vNode.props, type = vNode.type, children = vNode.children;
+              // 创建
+              var el = (vNode.el = hostCreateElement(type));
+              // 子节点
+              if (shapeFlag & 8 /* TEXT_CHILDREN */) {
+                  hostSetElementText(el, children);
+              }
+              else {
+                  moutChildren(children);
+              }
+              // 属性
+              if (props) {
+                  for (var key in props) {
+                      hostPatchProps(el, key, null, props[key]);
+                  }
+              }
+              // 插入节点
+              hostInset(el, container);
+          };
+          function moutChildren(children, el) {
+              for (var i = 0; i < children.length; i++) {
+                  patch(null, children[i], container);
+              }
+          }
+          var mountComponent = function (vNode, container) {
+              // 每个组件有一个effect，达到组件级更新的效果
+              // 组件的创建
+              var instance = (vNode.component = createComponentInstance(vNode));
+              // 组件的setup方法
+              setupComponent(instance);
+              // 渲染effect
+              setupRenderEffect(instance, container);
+          };
+          function setupRenderEffect(instance, container) {
+              effect(function () {
+                  if (!instance.isMounted) {
+                      // 组件的创建渲染
+                      var subtree = (instance.subtree = instance.render());
+                      patch(null, subtree, container);
+                      instance.isMounted = true;
+                  }
+                  else {
+                      // 组件的更新渲染
+                      console.log('更新');
+                  }
+              });
+          }
+          var processElement = function (prevNode, vNode, container) {
+              if (prevNode == null) {
+                  // 元素挂载
+                  mountElement(vNode, container);
+              }
+          };
+          var processComponent = function (prevNode, vNode, container) {
+              if (prevNode == null) {
+                  // 组件挂载
+                  mountComponent(vNode, container);
+              }
+          };
+          // & 包含类型
+          // 1100 & 0001
+          if (shapeFlag & 1 /* ELEMENT */) {
+              // 元素
+              processElement(prevNode, vNode, container);
+          }
+          else if (shapeFlag & 4 /* STATEFUL_COMPONENT */) {
+              //1100 0100
+              // 组件
+              processComponent(prevNode, vNode, container);
+          }
+      };
       var render = function (vNode, container) {
-          console.log(vNode, container);
+          // 初次渲染 没有prevNode
+          patch(null, vNode, container);
       };
       return {
           createApp: createAppApi(render),
       };
+  }
+
+  function h(type, props, children) {
+      if (props === void 0) { props = {}; }
+      if (children === void 0) { children = null; }
+      return createVNode(type, props, children);
   }
 
   var nodeOpts = {
@@ -404,6 +530,7 @@
   exports.createApp = createApp;
   exports.createRenderer = createRenderer;
   exports.effect = effect;
+  exports.h = h;
   exports.reactive = reactive;
   exports.ref = ref;
   exports.toRefs = toRefs;
