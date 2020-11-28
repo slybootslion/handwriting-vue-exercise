@@ -359,9 +359,22 @@
 
   function createRenderer(options) {
       var hostCreateElement = options.createElement, hostInset = options.inset, hostRemove = options.remove, hostSetElementText = options.setElementText, hostCreateTextNode = options.createTextNode, hostPatchProps = options.patchProps;
-      var patch = function (prevNode, vNode, container) {
+      function isSameNode(node1, node2) {
+          return node1.type === node2.type && node1.key === node2.key;
+      }
+      var patch = function (prevNode, vNode, container, anchor) {
+          if (anchor === void 0) { anchor = null; }
+          // 组件更新：同级比对，同Vue2
+          // 1.类型不一样 key不一样，不复用
+          // 2.复用节点后，比对属性
+          // 3.比对子节点，1方有子节点，直接替换或者直接删除
+          // 4.两方都有子节点（真正的diff算法）
+          if (prevNode && !isSameNode(prevNode, vNode)) {
+              hostRemove(prevNode.el);
+              prevNode = null;
+          }
           var shapeFlag = vNode.shapeFlag;
-          var mountElement = function (vNode, container) {
+          var mountElement = function (vNode, container, anchor) {
               var shapeFlag = vNode.shapeFlag, props = vNode.props, type = vNode.type, children = vNode.children;
               // 创建
               var el = (vNode.el = hostCreateElement(type));
@@ -370,7 +383,7 @@
                   hostSetElementText(el, children);
               }
               else {
-                  moutChildren(children);
+                  mountChildren(children, el);
               }
               // 属性
               if (props) {
@@ -379,13 +392,114 @@
                   }
               }
               // 插入节点
-              hostInset(el, container);
+              hostInset(el, container, anchor);
           };
-          function moutChildren(children, el) {
+          function mountChildren(children, container) {
               for (var i = 0; i < children.length; i++) {
                   patch(null, children[i], container);
               }
           }
+          function patchProps(oldProps, newProps, el) {
+              if (oldProps !== newProps) {
+                  for (var key in newProps) {
+                      var oldOne = oldProps[key];
+                      var newOne = newProps[key];
+                      if (oldOne !== newProps)
+                          hostPatchProps(el, key, oldOne, newOne);
+                  }
+                  // 旧的属性有，新的没有，删除旧属性
+                  for (var key in oldProps) {
+                      var oldOne = oldProps[key];
+                      if (!(key in newProps))
+                          hostPatchProps(el, key, oldOne, null);
+                  }
+              }
+          }
+          function patchKeyedChildren(c1, c2, el) {
+              var i = 0;
+              var e1 = c1.length - 1;
+              var e2 = c2.length - 1;
+              while (i <= e1 && i <= e2) {
+                  // 头相同
+                  var n1 = c1[i];
+                  var n2 = c2[i];
+                  if (isSameNode(n1, n2)) {
+                      patch(n1, n2, el);
+                  }
+                  else {
+                      break;
+                  }
+                  i++;
+              }
+              while (i <= e1 && i <= e2) {
+                  // 尾相同
+                  var n1 = c1[e1];
+                  var n2 = c2[e2];
+                  if (isSameNode(n1, n2)) {
+                      patch(n1, n2, el);
+                  }
+                  else {
+                      break;
+                  }
+                  e1--;
+                  e2--;
+              }
+              if (i > e1) {
+                  // 旧的节点都比较完了
+                  if (i <= e2) {
+                      // 新增节点
+                      var nextPos = e2 + 1;
+                      var anchor_1 = nextPos < c2.length ? c2[nextPos].el : null;
+                      while (i <= e2) {
+                          patch(null, c2[i], el, anchor_1);
+                          i++;
+                      }
+                  }
+              }
+              else if (i > e2) {
+                  // 新的节点都比较完了 删除旧的节点
+                  while (i <= e1) {
+                      hostRemove(c1[i].el);
+                      i++;
+                  }
+              }
+              else ;
+          }
+          function patchChildren(oldNode, newNode, el) {
+              var oldChildren = oldNode.children;
+              var newChildren = newNode.children;
+              // 4种情况（仅考虑文本和标签，其他元素不考虑）
+              var oldShapeFlag = oldNode.shapeFlag;
+              var newShapeFlag = newNode.shapeFlag;
+              // 1旧的是文本，新的是文本
+              // 2旧的是数组，新的是文本 如果新的是文本，直接覆盖
+              if (newShapeFlag & 8 /* TEXT_CHILDREN */) {
+                  if (newChildren !== oldChildren)
+                      hostSetElementText(el, newChildren);
+              }
+              else {
+                  // 3旧的是数组，新的是数组
+                  if (oldShapeFlag & 16 /* ARRAY_CHILDREN */) {
+                      // 真·diff算法
+                      patchKeyedChildren(oldChildren, newChildren, el);
+                  }
+                  else {
+                      // 4旧的是文本，新的是数组
+                      hostSetElementText(el, '');
+                      mountChildren(newChildren, el);
+                  }
+              }
+          }
+          var patchElement = function (prevNode, vNode, container) {
+              // 比较两个元素，并复用
+              var el = (vNode.el = prevNode.el);
+              var oldProps = prevNode.props;
+              var newProps = vNode.props;
+              // 比对属性
+              patchProps(oldProps, newProps, el);
+              // 比对子节点
+              patchChildren(prevNode, vNode, el);
+          };
           var mountComponent = function (vNode, container) {
               // 每个组件有一个effect，达到组件级更新的效果
               // 组件的创建
@@ -405,14 +519,19 @@
                   }
                   else {
                       // 组件的更新渲染
-                      console.log('更新');
+                      var prevTree = instance.subtree;
+                      var nextTree = instance.render();
+                      patch(prevTree, nextTree, container);
                   }
               });
           }
-          var processElement = function (prevNode, vNode, container) {
+          var processElement = function (prevNode, vNode, container, anchor) {
               if (prevNode == null) {
                   // 元素挂载
-                  mountElement(vNode, container);
+                  mountElement(vNode, container, anchor);
+              }
+              else {
+                  patchElement(prevNode, vNode);
               }
           };
           var processComponent = function (prevNode, vNode, container) {
@@ -425,7 +544,7 @@
           // 1100 & 0001
           if (shapeFlag & 1 /* ELEMENT */) {
               // 元素
-              processElement(prevNode, vNode, container);
+              processElement(prevNode, vNode, container, anchor);
           }
           else if (shapeFlag & 4 /* STATEFUL_COMPONENT */) {
               //1100 0100

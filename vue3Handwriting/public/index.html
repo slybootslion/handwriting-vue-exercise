@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vue3渲染原理</title>
+  <title>Vue3渲染原理-diff算法</title>
 </head>
 
 <body>
@@ -20,9 +20,31 @@ const App = {
       state.flag = !state.flag
     }, 2000)
     return () => {
+      /*      return state.flag ?
+              h('div', { style: { color: 'red' } }, 'google') :
+              h('p', { style: { color: 'blue' } }, 'baidu')*/
+      /*      return state.flag ?
+              h('div', { style: { color: 'red' } }, 'google') :
+              h('div', { style: { color: 'blue' } }, 'baidu')*/
+      /*      return state.flag ?
+              h('div', { style: { color: 'red' } }, [
+                h('div', {}, 'google'),
+                h('div', {}, 'facebook'),
+                h('div', {}, 'youtube')
+              ]) :
+              h('div', { style: { color: 'blue' } }, 'baidu')*/
       return state.flag ?
-        h('div', { style: { color: 'red' } }, 'google') :
-        h('div', { style: { color: 'blue' } }, 'baidu')
+        h('div', { style: { color: 'red' } }, [
+          h('div', { key: 'E' }, 'E'),
+          h('div', { key: 'A' }, 'A'),
+          h('div', { key: 'B' }, 'B'),
+          h('div', { key: 'C' }, 'C'),
+        ]) :
+        h('div', { style: { color: 'blue' } }, [
+          h('div', { key: 'A' }, 'A'),
+          h('div', { key: 'B' }, 'B'),
+          h('div', { key: 'C' }, 'C'),
+        ])
     }
   }
 }
