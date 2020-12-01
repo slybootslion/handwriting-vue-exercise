@@ -1,6 +1,6 @@
 import { createElement, createTextVnode } from "./src/vdom/index";
 
-export function renderMixin (Vue) {
+export function renderMixin(Vue) {
   // 创建元素的虚拟节点
   Vue.prototype._c = function (...args) {
     return createElement(this, ...args)
